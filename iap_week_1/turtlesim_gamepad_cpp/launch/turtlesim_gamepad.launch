@@ -1,0 +1,7 @@
+<launch>
+    <node name="joy" pkg="joy" type="joy_node" output="screen"/>
+    <node name="turtlesim" pkg="turtlesim" type="turtlesim_node"/>
+    <node name="turtlesim_gamepad" pkg="turtlesim_gamepad_cpp" type="turtlesim_gamepad">
+        <remap from="command_velocity" to="turtle1/command_velocity"/>
+    </node>
+</launch>

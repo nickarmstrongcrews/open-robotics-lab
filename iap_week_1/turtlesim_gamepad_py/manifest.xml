@@ -1,0 +1,19 @@
+<package>
+  <description brief="turtlesim_gamepad_py">
+
+     turtlesim_gamepad_py
+
+  </description>
+  <author>Turtlebot</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/turtlesim_gamepad_py</url>
+
+  <depend package="rospy"/>
+  <depend package="joy"/>
+  <depend package="turtlesim"/>
+  <depend package="sensor_msgs"/>
+
+</package>
+
+
