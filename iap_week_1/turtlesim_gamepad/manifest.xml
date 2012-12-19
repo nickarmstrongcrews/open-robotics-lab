@@ -10,6 +10,10 @@
   <url>http://ros.org/wiki/turtlesim_gamepad</url>
   <depend package="roscpp"/>
 
+  <depend package="joy"/>
+  <depend package="turtlesim"/>
+  <depend package="sensor_msgs"/>
+
 </package>
 
 
