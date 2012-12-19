@@ -1,3 +1,5 @@
 .rosinstall
 .rosinstall.bak
 setup.*
+bin
+build
