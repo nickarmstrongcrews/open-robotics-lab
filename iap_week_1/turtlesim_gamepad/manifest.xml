@@ -1,0 +1,15 @@
+<package>
+  <description brief="turtlesim_gamepad">
+
+     turtlesim_gamepad
+
+  </description>
+  <author>Turtlebot</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/turtlesim_gamepad</url>
+  <depend package="roscpp"/>
+
+</package>
+
+
