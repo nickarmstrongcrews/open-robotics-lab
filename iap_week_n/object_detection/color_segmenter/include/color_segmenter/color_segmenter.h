@@ -12,10 +12,11 @@
 
 #include "sensor_msgs/Image.h"
 #include "image_transport/image_transport.h"
-//#include "geometry_msgs/PolygonStamped.h"
-#include "cv_bridge/CvBridge.h"
-#include <opencv/cv.h>
-#include <opencv/highgui.h>
+
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include "cv_bridge/cv_bridge.h"
+#include <sensor_msgs/image_encodings.h>
 
 #include <object_detection_msgs/Mask2D.h>
 

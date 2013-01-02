@@ -18,29 +18,28 @@ ros::Publisher pub;
 void imageCallback(const sensor_msgs::ImageConstPtr& msg)
 {
 
-  sensor_msgs::CvBridge bridge;
-  IplImage *img;
-  try
-  {
-    img = bridge.imgMsgToCv(msg, "bgr8");
-    cvShowImage("Original", img);
-  }
-  catch (sensor_msgs::CvBridgeException& e)
-  {
-    ROS_ERROR("Could not convert from '%s' to 'bgr8'.", msg->encoding.c_str());
+  cv_bridge::CvImagePtr img;
+  try {
+    img = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+  } catch (cv_bridge::Exception& e) {
+    ROS_ERROR("cv_bridge exception: %s", e.what());
+    return;
   }
 
   object_detection_msgs::Mask2D mask;
-  mask.height = img->height;
-  mask.width = img->width;
+  mask.height = img->image.rows;
+  mask.width = img->image.cols;
   mask.isValid.resize(mask.height*mask.width);
-  for (int i = 0; i < img->height; i++)
+  for (int i = 0; i < img->image.rows; i++)
   {
-    for (int j = 0; j < img->width; j++)
+    for (int j = 0; j < img->image.cols; j++)
     {
-      unsigned int r = img->imageData[i * img->widthStep + 3*j + 2];
-      unsigned int g = img->imageData[i * img->widthStep + 3*j + 1];
-      unsigned int b = img->imageData[i * img->widthStep + 3*j];
+
+      cv::Vec3b pixel = img->image.at<cv::Vec3b>(i,j);
+      unsigned int b = pixel[0];
+      unsigned int g = pixel[1];
+      unsigned int r = pixel[2];
+
       float intensity = r + g + b + 1;                         // add to avoid div by 0
       float targetIntensity = targetR + targetG + targetB + 1; // add to avoid div by 0
       double l1_dist_normalized = fabs(r/intensity-targetR/targetIntensity) + fabs(g/intensity-targetG/targetIntensity) + fabs(b/intensity-targetB/targetIntensity);
@@ -49,14 +48,14 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
 	 (normalizeIntensity && l1_dist_normalized < distThresh/(3.0*255)) ||
 	 (!normalizeIntensity && l1_dist < distThresh)
         ) {
-	img->imageData[i * img->widthStep + 3*j + 2] = targetR;
-	img->imageData[i * img->widthStep + 3*j + 1] = targetG;
-	img->imageData[i * img->widthStep + 3*j    ] = targetB;
+	pixel[0] = targetB;
+	pixel[1] = targetG;
+	pixel[2] = targetR;
 	mask.isValid[i * mask.width + j] = true;
       } else {
-	img->imageData[i * img->widthStep + 3*j + 2] = 0;
-	img->imageData[i * img->widthStep + 3*j + 1] = 0;
-	img->imageData[i * img->widthStep + 3*j    ] = 0;
+	pixel[0] = 0;
+	pixel[1] = 0;
+	pixel[2] = 0;
 	mask.isValid[i * mask.width + j] = false;
       }
     }
@@ -64,7 +63,7 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
 
   pub.publish(mask);
 
-  cvShowImage("Thresholded", img);
+  cv::imshow("Thresholded", img->image);
 
 }
 
