@@ -1,0 +1,16 @@
+<!--
+  Copyright 2011, 2012 Massachusetts Institute of Technology
+
+  This work is sponsored by the Department of the Air Force under Air Force Contract #FA8721-05-C-0002.
+  Opinions, interpretations, conclusions and recommendations are those of the authors and are not necessarily endorsed by the United States Government.
+-->
+
+<launch>
+
+  <include file="$(find color_segmenter)/launch/color_segmenter.launch" />
+  <include file="$(find planar_segmenter)/launch/planar_segmenter.launch" />
+  <include file="$(find planar_segmenter)/launch/view_planar_segmenter.launch" />
+
+  <include file="$(find turtlebot_bringup)/kinect.launch" />
+
+</launch>

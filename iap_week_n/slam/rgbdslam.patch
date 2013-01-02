@@ -1,0 +1,58 @@
+Index: src/glviewer.cpp
+===================================================================
+--- src/glviewer.cpp	(revision 15)
++++ src/glviewer.cpp	(working copy)
+@@ -297,7 +297,7 @@
+     glNewList(cloud_list_index, GL_COMPILE);
+     cloud_list_indices.push_back(cloud_list_index);
+     //ROS_INFO_COND(!pc->is_dense, "Expected dense cloud for opengl drawing");
+-    const point_type origin = {{{ 0.0 }}, {{0.0}}};
++    const point_type origin (0, 0, 0);
+     float depth;
+     bool strip_on = false, flip = false; //if flip is true, first the lower then the upper is inserted
+     unsigned int w=pc->width, h=pc->height;
+@@ -443,7 +443,7 @@
+     glNewList(cloud_list_index, GL_COMPILE);
+     glBegin(GL_TRIANGLES);
+     //ROS_INFO_COND(!pc->is_dense, "Expected dense cloud for opengl drawing");
+-    const point_type origin = {{{ 0.0 }}, {{0.0}}};
++    const point_type origin(0,0,0); // = {{{ 0.0 }}, {{0.0}}};
+     float depth;
+     unsigned int w=pc->width, h=pc->height;
+     for(unsigned int x = 0; x < w-1; x++){
+Index: src/graph_manager.cpp
+===================================================================
+--- src/graph_manager.cpp	(revision 15)
++++ src/graph_manager.cpp	(working copy)
+@@ -1010,10 +1010,13 @@
+ //template <typename PointT> void
+ //transformAndAppendPointCloud (const pcl::PointCloud<PointT> &cloud_in, pcl::PointCloud<PointT> &cloud_to_append_to,
+ //                              const tf::Transform transformation)
+-void transformAndAppendPointCloud (const pointcloud_type &cloud_in, 
++void transformAndAppendPointCloud (const pointcloud_type &cloud_in0, 
+                                    pointcloud_type &cloud_to_append_to,
+                                    const tf::Transform transformation, float Max_Depth)
+ {
++
++    pointcloud_type cloud_in(cloud_in0);
++
+     bool compact = !ParameterServer::instance()->get<bool>("preserve_raster_on_save");
+     Eigen::Matrix4f eigen_transform;
+     pcl_ros::transformAsMatrix(transformation, eigen_transform);
+@@ -1090,3 +1093,4 @@
+     Eigen::Vector3d lengths = m.inverse() * ray_origin;
+     return (lengths(0) < 0 && lengths(1) > 0 && lengths(2) > 0 );
+ }
++
+Index: launch/kinect+rgbdslam.launch
+===================================================================
+--- launch/kinect+rgbdslam.launch	(revision 15)
++++ launch/kinect+rgbdslam.launch	(working copy)
+@@ -1,6 +1,6 @@
+ <launch>
+   <include file="$(find openni_camera)/launch/openni_node.launch"/>
+-  <node pkg="rgbdslam" type="rgbdslam" name="rgbdslam" cwd="node" required="false" output="log" > </node>
++  <node pkg="rgbdslam" type="rgbdslam" name="rgbdslam" launch-prefix="optirun" />
+   <!--node pkg="rviz" type="rviz" name="rviz" args="-d $(find rgbdslam)/launch/rviz_config.vcg" respawn="false" output="log" > </node-->
+   <!--node pkg="rxtools" type="rxconsole" name="rxconsole" output="log" > </node-->
+   <!--include file="$(find openni_camera)/launch/kinect_frames.launch"/-->

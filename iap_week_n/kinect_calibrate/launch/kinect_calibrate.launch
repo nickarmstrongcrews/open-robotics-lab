@@ -1,0 +1,18 @@
+<!--
+  Copyright 2011, 2012 Massachusetts Institute of Technology
+
+  This work is sponsored by the Department of the Air Force under Air Force Contract #FA8721-05-C-0002.
+  Opinions, interpretations, conclusions and recommendations are those of the authors and are not necessarily endorsed by the United States Government.
+-->
+
+<launch>
+
+  <include file="$(find turtlebot_bringup)/kinect.launch" output="screen" />
+
+  <node pkg="rviz" type="rviz" name="$(anon rviz)" launch-prefix="optirun" respawn="true"
+        args="-d $(find kinect_calibrate)/config/kinect_calibrate_viz.vcg" />
+
+  <node pkg="kinect_calibrate" type="dynamic_param_gui.py" name="pitch_correction_gui" />
+  <node pkg="kinect_calibrate" type="param2tf.py" name="publish_pitch_correction" />
+
+</launch>
