@@ -3,7 +3,6 @@
 # IF YOU WANT TO CHANGE THE ROS ENVIRONMENT VARIABLES
 # USE THE rosinstall TOOL INSTEAD.
 # IF YOU CHANGE IT, USE rosinstall FOR THE CHANGES TO TAKE EFFECT
-- setup-file: {local-name: /opt/ros/groovy/setup.sh}
 - other: {local-name: iap_bringup}
 - other: {local-name: iap_week_1}
 - other: {local-name: iap_week_2}
