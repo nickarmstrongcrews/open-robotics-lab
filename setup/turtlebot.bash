@@ -215,7 +215,12 @@ popd
 # Setup .rosrc-local
 ##
 bash -c "cat >~/.rosrc-local" <<'EOF'
-. ~/open-robotics-lab/setup.bash
+export TURTLEBOT_BASE=kobuki
+export TURTLEBOT_STACKS=hexagons
+export TURTLEBOT_3D_SENSOR=kinect
+export TURTLEBOT_SIMULATION=false
+
+source ~/open-robotics-lab/setup.bash
 
 #export ROS_HOSTNAME=turtlebot-static
 #export ROS_MASTER_URI=http://turtlebot-static:11311/
@@ -247,4 +252,10 @@ mkdir -p ~/.ssh
 cp ~/open-robotics-lab/setup/id_rsa.turtlebot ~/.ssh/id_rsa
 cp ~/open-robotics-lab/setup/id_rsa.pub.turtlebot ~/.ssh/id_rsa.pub
 cp ~/open-robotics-lab/setup/id_rsa.pub.turtlevm ~/.ssh/authorized_keys
+
+#
+##
+sudo cp /opt/ros/groovy/stacks/kobuki/kobuki_ftdi/57-kobuki.rules /etc/udev/rules.d
+
+
 
