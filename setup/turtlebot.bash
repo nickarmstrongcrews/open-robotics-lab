@@ -8,12 +8,6 @@ function error_exit
 }
 
 ##############################################################################
-# Check for required files
-##############################################################################
-ENCASE="encase_0.0.1_i386.deb"
-[ ! -f "$ENCASE" ] && error_exit "Missing EnCase install"
-
-##############################################################################
 # Install Essentials
 ##############################################################################
  
@@ -21,7 +15,7 @@ ENCASE="encase_0.0.1_i386.deb"
 sudo sed -i -e 's/us\.archive\.ubuntu\.com/mirrors\.mit\.edu/' -e 's/security\.ubuntu\.com/mirrors\.mit\.edu/' /etc/apt/sources.list
  
 # Update the package list, and install all available package updates.
-sudo apt-get update && sudo apt-get dist-upgrade
+sudo apt-get update && sudo apt-get dist-upgrade -y
  
 # Ubuntu Extras
 # Installs fonts and media, standard compilers, chrony for time sync, ssh for remote access, and ack
@@ -45,17 +39,13 @@ wget https://dl.google.com/linux/direct/google-chrome-stable_current_i386.deb
 sudo dpkg -i /tmp/google-chrome-stable_current_i386.deb
 popd
 
-# EnCase
-## Install the MIT Lincoln Laboratory EnCase Forensic Software
-sudo dpkg -i "$ENCASE"
-
 ##############################################################################
 # Essential Configuration
 ##############################################################################
 
 # Hostname
 ## Make sure the hostname is turtlebot
-sudo bash -c 'echo "turtlebot" > /etc/hostname'
+#sudo bash -c 'echo "turtlebot" > /etc/hostname'
 
 # Dotfiles
 ## Install Michael Carroll's dotfiles
@@ -72,7 +62,7 @@ popd
 # Indicators
 ## 
 mkdir -p ~/.config/autostart
-sudo apt-get install indicator-multiload indicator-cpufreq
+sudo apt-get install -y indicator-multiload indicator-cpufreq
 #TODO: add cpu, memory, and network graphs
 
 # Power
@@ -141,7 +131,7 @@ sudo chmod 300 /etc/NetworkManager/system-connections/DHCP-Address
 
 # Launcher
 ## Setup the Launcher
-gsettings set com.canonical.Unity.Launcher favorites ['nautilus-home.desktop', 'firefox.desktop', 'terminator.desktop']
+gsettings set com.canonical.Unity.Launcher favorites "['nautilus-home.desktop', 'firefox.desktop', 'terminator.desktop']"
 
 ##############################################################################
 # ROS
@@ -152,6 +142,7 @@ sudo apt-get update
 
 sudo apt-get install -y python-rosdep python-rosinstall python-rospkg
 sudo apt-get install -y ros-groovy-desktop-full
+source /opt/ros/groovy/setup.bash
 sudo rosdep init; rosdep update
  
 ##############################################################################
@@ -207,7 +198,7 @@ git clone https://github.com/mjcarroll/open-robotics-lab ~/open-robotics-lab
 pushd ~/open-robotics-lab
 git branch -t 1.0 origin/1.0
 git checkout 1.0
-rowws regenerate
+rosws regenerate
 rosws merge /opt/ros/groovy
 rosws update
 popd
@@ -256,6 +247,3 @@ cp ~/open-robotics-lab/setup/id_rsa.pub.turtlevm ~/.ssh/authorized_keys
 #
 ##
 sudo cp /opt/ros/groovy/stacks/kobuki/kobuki_ftdi/57-kobuki.rules /etc/udev/rules.d
-
-
-
