@@ -1,6 +1,6 @@
 <launch>
-	<include file="$(find iap_bringup)/launch/minimal.launch"/>
-	<include file="$(find iap_bringup)/launch/3dsensor.launch">
+	<include file="$(find iap_bringup)/launch/includes/_minimal.launch"/>
+	<include file="$(find iap_bringup)/launch/includes/_3dsensor.launch">
           <arg name="use_openni_launch" value="true" />
         </include>
         <node pkg="topic_tools" type="throttle" name="iap_cloud_throttle"

@@ -1,4 +1,30 @@
 <launch>
     <include file="$(find iap_bringup)/launch/includes/_minimal.launch"/>
+
+    <node pkg="nodelet" type="nodelet" name="kobuki" args="manager"/>
+
+    <node pkg="nodelet" type="nodelet" name="kobuki_safety_controller" args="load kobuki_safety_controller/SafetyControllerNodelet kobuki">
+        <remap from="kobuki_safety_controller/cmd_vel" to="cmd_vel_mux/input/safety_controller"/>
+        <remap from="kobuki_safety_controller/events/bumper" to="mobile_base/events/bumper"/>
+        <remap from="kobuki_safety_controller/events/cliff" to="mobile_base/events/cliff"/>
+        <remap from="kobuki_safety_controller/events/wheel_drop" to="mobile_base/events/wheel_drop"/>
+    </node>
+
+    <node pkg="nodelet" type="nodelet" name="keyop_vel_smoother" args="load yocs_velocity_smoother/VelocitySmootherNodelet kobuki">
+        <rosparam file="$(find kobuki_keyop)/param/keyop_smoother.yaml" command="load"/>
+        <remap from="keyop_vel_smoother/odometry" to="odom"/>
+        <remap from="keyop_vel_smoother/smooth_cmd_vel" to="cmd_vel_mux/input/teleop"/>
+    </node>
+
+    <node launch-prefix="urxvt -e " pkg="kobuki_keyop" type="keyop" name="keyop" output="screen">
+        <remap from="keyop/motor_power" to="mobile_base/commands/motor_power"/>
+        <remap from="keyop/cmd_vel" to="keyop_vel_smoother/raw_cmd_vel"/>
+        <param name="linear_vel_step"  value="0.05" type="double"/>
+        <param name="linear_vel_max"   value="1.5"  type="double"/>
+        <param name="angular_vel_step" value="0.33" type="double"/>
+        <param name="angular_vel_max"  value="6.6"  type="double"/>
+        <param name="wait_for_connection_" value="true" type="bool"/>
+    </node>
+
 </launch>
 
