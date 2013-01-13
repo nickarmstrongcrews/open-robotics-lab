@@ -1,5 +1,5 @@
 <launch>
-    <include file="$(find turtlebot_bringup)/launch/minimal.launch"/>
+    <include file="$(find iap_bringup)/launch/minimal.launch"/>
 
     <node pkg="nodelet" type="nodelet" name="kobuki" args="manager"/>
 
