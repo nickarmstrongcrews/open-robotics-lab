@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# Break on error
+set -e
+
 PROGNAME=$(basename $0)
 function error_exit
 {
@@ -43,9 +46,8 @@ popd
 # Essential Configuration
 ##############################################################################
 
-# Hostname
-## Make sure the hostname is turtlebot
-#sudo bash -c 'echo "turtlebot" > /etc/hostname'
+# Get hostname
+HOSTNAME=`cat /etc/hostname`
 
 # Dotfiles
 ## Install Michael Carroll's dotfiles
@@ -63,6 +65,7 @@ popd
 ## 
 mkdir -p ~/.config/autostart
 sudo apt-get install -y indicator-multiload indicator-cpufreq
+indicator-multiload&
 #TODO: add cpu, memory, and network graphs
 
 # Power
@@ -75,7 +78,7 @@ gsettings set org.gnome.settings-daemon.plugins.power lid-close-battery-action '
 ## Set /etc/hosts
 sudo bash -c "cat >/etc/hosts" <<'EOF'
 127.0.0.1	localhost
-127.0.1.1	turtlebot
+127.0.1.1	HOSTNAME
 
 192.168.1.200   turtlevm-static
 192.168.1.202   turtlebot-static
@@ -87,15 +90,16 @@ ff00::0 ip6-mcastprefix
 ff02::1 ip6-allnodes
 ff02::2 ip6-allrouters
 EOF
+sudo sed -e "s/HOSTNAME/$HOSTNAME/" -i /etc/hosts
 
 # Network
-## Create Static-Address and DHCP-Address system connections
-sudo bash -c "cat >/etc/NetworkManager/system-connections/Static-Address" <<'EOF'
+## Create TurtleBot-Static-Address, TurtleVM-Static-Address, and DHCP-Address system connections
+sudo bash -c "cat >/etc/NetworkManager/system-connections/TurtleBot-Static-Address" <<'EOF'
 [802-3-ethernet]
 duplex=full
 
 [connection]
-id=Static-Address
+id=TurtleBot-Static-Address
 uuid=UUID
 type=802-3-ethernet
 autoconnect=false
@@ -108,8 +112,30 @@ method=manual
 addresses1=192.168.1.202;24;192.168.1.1;
 EOF
 UUID=`uuidgen`
-sudo sed -i /etc/NetworkManager/system-connections/Static-Address -e "s/UUID/$UUID/"
-sudo chmod 300 /etc/NetworkManager/system-connections/Static-Address 
+sudo sed -i /etc/NetworkManager/system-connections/TurtleBot-Static-Address -e "s/UUID/$UUID/"
+sudo chmod 300 /etc/NetworkManager/system-connections/TurtleBot-Static-Address 
+#
+sudo bash -c "cat >/etc/NetworkManager/system-connections/TurtleVM-Static-Address" <<'EOF'
+[802-3-ethernet]
+duplex=full
+
+[connection]
+id=TurtleVM-Static-Address
+uuid=UUID
+type=802-3-ethernet
+autoconnect=false
+
+[ipv6]
+method=auto
+
+[ipv4]
+method=manual
+addresses1=192.168.1.200;24;192.168.1.1;
+EOF
+UUID=`uuidgen`
+sudo sed -i /etc/NetworkManager/system-connections/TurtleVM-Static-Address -e "s/UUID/$UUID/"
+sudo chmod 300 /etc/NetworkManager/system-connections/TurtleVM-Static-Address 
+#
 sudo bash -c "cat >/etc/NetworkManager/system-connections/DHCP-Address" <<'EOF'
 [802-3-ethernet]
 duplex=full
@@ -232,7 +258,7 @@ bash -c "cat >~/devel/ros/iap_support/.rosinstall" <<'EOF'
 - git: { uri: 'https://github.com/mjcarroll/yujin_ocs.git', local-name: yujin_ocs }
 EOF
 pushd ~/devel/ros/iap_support
-rowws regenerate
+rosws regenerate
 rosws merge /opt/ros/groovy
 rosws update
 popd
