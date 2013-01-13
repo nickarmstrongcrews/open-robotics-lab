@@ -22,7 +22,7 @@ sudo apt-get update && sudo apt-get dist-upgrade -y
  
 # Ubuntu Extras
 # Installs fonts and media, standard compilers, chrony for time sync, ssh for remote access, and ack
-sudo apt-get install -y ubuntu-restricted-extras build-essential keychain chrony openssh-server ack
+sudo apt-get install -y ubuntu-restricted-extras build-essential keychain chrony openssh-server ack mesa-utils
  
 # Install VCS
 ## All of the essential verison control tools
