@@ -66,7 +66,13 @@ popd
 mkdir -p ~/.config/autostart
 sudo apt-get install -y indicator-multiload indicator-cpufreq
 indicator-multiload&
-#TODO: add cpu, memory, and network graphs
+gsettings set de.mh21.indicator.multiload speed 1000
+gsettings set de.mh21.indicator.multiload view-cpuload true
+gsettings set de.mh21.indicator.multiload view-diskload false
+gsettings set de.mh21.indicator.multiload view-loadavg false
+gsettings set de.mh21.indicator.multiload view-memload true
+gsettings set de.mh21.indicator.multiload view-netload true
+gsettings set de.mh21.indicator.multiload view-swapload false
 
 # Power
 ## Do not suspend, hybernate, or shut down when the lid is closed
