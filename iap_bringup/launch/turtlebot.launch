@@ -1,22 +1,5 @@
+
 <launch>
-    <include file="$(find iap_bringup)/launch/includes/_minimal.launch"/>
-
-    <node pkg="nodelet" type="nodelet" name="keyop_vel_smoother_nodelet_manager" args="manager"/>
-    <node pkg="nodelet" type="nodelet" name="keyop_vel_smoother" args="load yocs_velocity_smoother/VelocitySmootherNodelet keyop_vel_smoother_nodelet_manager">
-        <rosparam file="$(find kobuki_keyop)/param/keyop_smoother.yaml" command="load"/>
-        <remap from="keyop_vel_smoother/odometry" to="odom"/>
-        <remap from="keyop_vel_smoother/smooth_cmd_vel" to="cmd_vel_mux/input/teleop"/>
-    </node>
-
-    <node launch-prefix="urxvt -e " pkg="kobuki_keyop" type="keyop" name="keyop" output="screen">
-        <remap from="keyop/motor_power" to="mobile_base/commands/motor_power"/>
-        <remap from="keyop/cmd_vel" to="keyop_vel_smoother/raw_cmd_vel"/>
-        <param name="linear_vel_step"  value="0.05" type="double"/>
-        <param name="linear_vel_max"   value="1.5"  type="double"/>
-        <param name="angular_vel_step" value="0.33" type="double"/>
-        <param name="angular_vel_max"  value="6.6"  type="double"/>
-        <param name="wait_for_connection_" value="true" type="bool"/>
-    </node>
-
+  <include file="$(find iap_bringup)/launch/includes/_minimal.launch"/>
 </launch>
 
