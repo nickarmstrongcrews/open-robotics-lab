@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 # load proper manifest (the name of the package where the respective manifest.xml is found)
-import roslib; roslib.load_manifest('turtle_notes')
+import roslib; roslib.load_manifest('iap_week2_notes')
 
 import rospy				# python library
 import math				# math library
@@ -42,7 +42,7 @@ class TurtleJoyNode:
 	# define the joy callback, this function will run every time a joy message is received
 	# this requires that joy_node be running (true if you include it in a .launch file, otherwise run in separate terminal window)
 	# the contents of the joy message are written to the variable "joy_msg", this variable is defined here and is valid only within joy_callback
-	# if the joy_node repeat rate is zero then this is called only when the gamepad value changes (on button press, move joystick etc…)
+	# if the joy_node repeat rate is zero then this is called only when the gamepad value changes (on button press, move joystick etc)
 	def joy_callback(self, joy_msg):
 		# a cheap way to tell if the data received is of proper format (good for checking data integrity)
 		if len(joy_msg.axes) < 2:
@@ -102,7 +102,7 @@ class TurtleJoyNode:
 				if self.shape_clock < 3.0:
 					# for the first three seconds go straight
 					lin_cmd = self.linear_scale
-				elif self.shape_clock < 4.0:
+				elif self.shape_clock < 4.4:
 					# then, for the next second, rotate (zero linear)
 					ang_cmd = self.angular_scale
 				elif self.shape_clock < 6.0:
@@ -142,7 +142,7 @@ class TurtleJoyNode:
 
 # the definition of main, it says, initialize and then call run_shape
 if __name__ == "__main__":
-	rospy.init_node("turtle_notes")
+	rospy.init_node("iap_week2_notes")
 	node = TurtleJoyNode()
 	#rospy.spin()
 	try:
