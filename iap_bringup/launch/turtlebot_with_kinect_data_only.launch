@@ -1,0 +1,8 @@
+
+<launch>
+  <include file="$(find iap_bringup)/launch/includes/_minimal.launch"/>
+  <include file="$(find iap_bringup)/launch/includes/_openni.launch">
+    <arg name="load_processing" value="false" />
+    <arg name="data_skip"       value="4" />
+  </include>
+</launch>
