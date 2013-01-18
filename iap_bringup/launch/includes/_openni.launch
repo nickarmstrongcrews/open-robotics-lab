@@ -35,6 +35,7 @@
        tree. Useful if you are playing back recorded raw data from a bag, or are
        supplying a more accurate tf tree from calibration. -->
   <arg name="load_driver" default="true" />
+  <arg name="load_processing" default="true" />
   <arg name="publish_tf" default="true" />
 
   <!-- Disable bond topics by default -->
@@ -42,7 +43,8 @@
   <arg name="respawn" default="$(arg bond)" />
 
   <!-- Start nodelet manager in top-level namespace -->
-  <arg name="manager" value="$(arg camera)_nodelet_manager" />
+  <arg     if="$(arg load_driver)" name="manager" value="$(arg camera)_nodelet_manager" />
+  <arg unless="$(arg load_driver)" name="manager" value="$(arg camera)_processing_nodelet_manager" />
   <arg name="debug" default="false" /> <!-- Run manager in GDB? -->
   <include file="$(find openni_launch)/launch/includes/manager.launch">
     <arg name="name" value="$(arg manager)" />
@@ -72,7 +74,8 @@
     </include>
 
     <!-- Load standard constellation of processing nodelets -->
-    <include file="$(find openni_launch)/launch/includes/processing.launch">
+    <include if="$(arg load_processing)"
+	     file="$(find openni_launch)/launch/includes/processing.launch">
       <arg name="manager"               value="/$(arg manager)" /> <!-- Fully resolved -->
       <arg name="rgb"                   value="$(arg rgb)" />
       <arg name="ir"                    value="$(arg ir)" />
