@@ -1,0 +1,15 @@
+<package>
+  <description brief="turtlesquare">
+
+     turtlesquare
+
+  </description>
+  <author>turtlebot</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/turtlesquare</url>
+  <depend package="rospy"/>
+
+</package>
+
+
