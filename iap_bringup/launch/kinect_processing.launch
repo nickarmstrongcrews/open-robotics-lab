@@ -1,0 +1,6 @@
+
+<launch>
+  <include file="$(find iap_bringup)/launch/includes/_openni.launch">
+    <arg name="load_driver" value="false" />
+  </include>
+</launch>
