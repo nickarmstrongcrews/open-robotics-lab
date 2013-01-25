@@ -1,0 +1,15 @@
+<stack>
+    <description brief="IAP Week 5">
+    Stack for holding MIT IAP 2013 Week 5 Activities.
+    </description>
+    <author>Maintained by Michael Boulet</author>
+    <license></license>
+    <review status="unreviewed" notes=""/>
+    <url></url>
+
+    <depend stack="turtlebot"/>
+    <depend stack="std_msgs"/>
+    <depend stack="common-msgs" />
+    <depend stack="ros"/>
+    <depend stack="ros_comm"/>
+</stack>
