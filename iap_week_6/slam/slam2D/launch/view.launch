@@ -1,0 +1,25 @@
+<!--
+  Copyright 2011, 2012, 2013 Massachusetts Institute of Technology
+
+  This work is sponsored by the Office of the Assistant Secretary of Defense for Research and Engineering under Air Force Contract #FA8721-05-C-0002.
+  Opinions, interpretations, conclusions and recommendations are those of the authors and are not necessarily endorsed by the United States Government.
+-->
+
+<launch>
+
+  <node pkg="rviz" type="rviz" name="$(anon rviz)"
+        args="-d $(find slam2D)/config/planarSLAM.vcg" />
+
+  <!-- stores pose history (for visualization) -->
+  <node pkg="slam2D" type="tf2poseHistory.py" name="poseHistoryDeadReckoning" >
+    <param name="pub_frame_id" value="/map" /> <!-- hack-y way to circumvent /map->/odom pose correction -->
+    <remap from="pose_history" to="pose_history_dead_reckoning" />
+    <remap from="current_pose" to="current_pose_dead_reckoning" />
+  </node>
+
+  <!-- stores corrected pose history (for visualization) -->
+  <node pkg="slam2D" type="tf2poseHistory.py" name="poseHistory" >
+    <param name="pub_frame_id" value="/odom" /> <!-- properly publish readings with frame they were taken in -->
+  </node>
+
+</launch>
