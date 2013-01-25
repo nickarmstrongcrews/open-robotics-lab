@@ -1,0 +1,45 @@
+<launch>
+  <include file="$(find iap_bringup)/launch/includes/_3dsensor.launch">
+    <arg name="rgb_processing" value="false" />
+    <arg name="depth_registration" value="false" />
+    <arg name="depth_processing" value="false" />
+  </include>
+
+  <node pkg="nodelet" type="nodelet" name="navigation_velocity_smoother" args="load yocs_velocity_smoother/VelocitySmootherNodelet mobile_base_nodelet_manager">
+    <rosparam file="$(find iap_bringup)/param/defaults/smoother.yaml" command="load"/>
+    <remap from="navigation_velocity_smoother/odometry" to="odom"/> <!-- Todo : moved to odom_combined -->
+    <remap from="navigation_velocity_smoother/raw_cmd_vel" to="cmd_vel_mux/input/navi_raw"/>
+    <remap from="navigation_velocity_smoother/smooth_cmd_vel" to="cmd_vel_mux/input/navi"/>
+  </node>
+
+  <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+    <rosparam file="$(find iap_week_5)/param/costmap_common_params.yaml" command="load" ns="global_costmap" />
+    <rosparam file="$(find iap_week_5)/param/costmap_common_params.yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(find iap_week_5)/param/local_costmap_params.yaml" command="load" />
+    <rosparam file="$(find iap_week_5)/param/global_costmap_params.yaml" command="load" />
+    <rosparam file="$(find iap_week_5)/param/base_local_planner_params.yaml" command="load" />
+    <remap from="cmd_vel" to="cmd_vel_mux/input/navi_raw"/>
+  </node>
+
+  <!--
+    Tweaks to adapt the move base node to local navigation:
+     - global costmap is also a rolling window, non-static map
+     - so it's referenced to odom, as the local costmap
+     - and it must be updated, dislike a static map
+     - we use a bigger costmap than that of the local planner
+     - replan often to contour hit obstacles
+  -->
+  <param name="move_base/global_costmap/global_frame" value="odom"/>
+  <param name="move_base/global_costmap/update_frequency" value="1.0"/>
+  <param name="move_base/global_costmap/publish_frequency" value="1.0"/>
+  <param name="move_base/global_costmap/static_map" value="false"/>
+  <param name="move_base/global_costmap/rolling_window" value="true"/>
+  <param name="move_base/global_costmap/width" value="10.0"/>
+  <param name="move_base/global_costmap/height" value="10.0"/>
+  <param name="move_base/global_costmap/resolution" value="0.02"/>
+  <param name="move_base/global_costmap/origin_x" value="0.0"/>
+  <param name="move_base/global_costmap/origin_y" value="0.0"/>
+  <param name="move_base/local_costmap/resolution" value="0.02"/>
+  <param name="move_base/planner_frequency" value="5.0"/>
+</launch>
+

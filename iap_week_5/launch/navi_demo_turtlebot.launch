@@ -1,0 +1,15 @@
+<launch>
+  <include file="$(find iap_bringup)/launch/includes/_3dsensor.launch">
+    <arg name="rgb_processing" value="false" />
+    <arg name="depth_registration" value="false" />
+    <arg name="depth_processing" value="false" />
+  </include>
+
+  <node pkg="nodelet" type="nodelet" name="navigation_velocity_smoother" args="load yocs_velocity_smoother/VelocitySmootherNodelet mobile_base_nodelet_manager">
+    <rosparam file="$(find iap_bringup)/param/defaults/smoother.yaml" command="load"/>
+    <remap from="navigation_velocity_smoother/odometry" to="odom"/> <!-- Todo : moved to odom_combined -->
+    <remap from="navigation_velocity_smoother/raw_cmd_vel" to="cmd_vel_mux/input/navi_raw"/>
+    <remap from="navigation_velocity_smoother/smooth_cmd_vel" to="cmd_vel_mux/input/navi"/>
+  </node>
+</launch>
+
