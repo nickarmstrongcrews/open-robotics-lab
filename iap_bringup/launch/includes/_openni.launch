@@ -23,7 +23,7 @@
 
   <!-- Use OpenNI's factory-calibrated depth->RGB registration? -->
   <arg name="depth_registration" default="false" />
-  <arg name="data_skip" default="9" />
+  <arg name="data_skip" default="0" />
 
   <!-- Arguments for remapping all device namespaces -->
   <arg name="rgb"              default="rgb" />
