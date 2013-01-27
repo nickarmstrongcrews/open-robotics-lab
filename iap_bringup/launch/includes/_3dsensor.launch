@@ -13,6 +13,9 @@
   <arg name="depth_registration" default="true"/>
   <arg     if="$(arg depth_registration)" name="depth" value="depth_registered" />
   <arg unless="$(arg depth_registration)" name="depth" value="depth" />
+
+  <!-- Throttle -->
+  <arg name="data_skip" default="0" />
   
   <!-- Processing Modules -->
   <arg name="rgb_processing"     default="true"/>
@@ -24,6 +27,7 @@
     <node pkg="nodelet" type="nodelet" name="openni_camera_loader" args="load openni_camera/driver $(arg manager)" respawn="true">
         <rosparam file="$(find iap_bringup)/param/3dsensor.yaml" command="load"/>
         <param name="depth_registration" value="$(arg depth_registration)"/>
+	<param name="data_skip" value="$(arg data_skip)" />
     </node>
 
     <group if="$(arg rgb_processing)">
