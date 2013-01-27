@@ -7,8 +7,7 @@
   <arg name="respawn" default="false" />
   <arg     if="$(arg respawn)" name="bond" value="" />
   <arg unless="$(arg respawn)" name="bond" value="--no-bond" />
-  <arg name="manager" value="$(arg camera)_nodelet_manager" />
-
+ 
   <!-- Depth registration -->
   <arg name="depth_registration" default="true"/>
   <arg     if="$(arg depth_registration)" name="depth" value="depth_registered" />
@@ -17,14 +16,20 @@
   <!-- Throttle -->
   <arg name="data_skip" default="0" />
   
-  <!-- Processing Modules -->
+  <!-- Modules -->
+  <arg name="load_driver"        default="true"/>
   <arg name="rgb_processing"     default="true"/>
   <arg name="depth_processing"   default="true"/>
   <arg name="scan_processing"    default="true"/>
 
+  <!-- Manager name -->
+  <arg     if="$(arg load_driver)" name="manager" value="$(arg camera)_nodelet_manager" />
+  <arg unless="$(arg load_driver)" name="manager" value="$(arg camera)_processing_nodelet_manager" />
+
   <group ns="$(arg camera)">
     <node pkg="nodelet" type="nodelet" name="$(arg manager)" respawn="true" args="manager"/>
-    <node pkg="nodelet" type="nodelet" name="openni_camera_loader" args="load openni_camera/driver $(arg manager)" respawn="true">
+    <node if="$(arg load_driver)"
+          pkg="nodelet" type="nodelet" name="openni_camera_loader" args="load openni_camera/driver $(arg manager)" respawn="true">
         <rosparam file="$(find iap_bringup)/param/3dsensor.yaml" command="load"/>
         <param name="depth_registration" value="$(arg depth_registration)"/>
 	<param name="data_skip" value="$(arg data_skip)" />
