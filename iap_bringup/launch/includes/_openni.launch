@@ -21,10 +21,6 @@
   <arg name="rgb_camera_info_url"   default="" />
   <arg name="depth_camera_info_url" default="" />
 
-  <!-- Use OpenNI's factory-calibrated depth->RGB registration? -->
-  <arg name="depth_registration" default="false" />
-  <arg name="data_skip" default="0" />
-
   <!-- Arguments for remapping all device namespaces -->
   <arg name="rgb"              default="rgb" />
   <arg name="ir"               default="ir" />
@@ -32,12 +28,21 @@
   <arg name="depth_registered" default="depth_registered" />
   <arg name="projector"        default="projector" />
 
+  <!-- Use OpenNI's factory-calibrated depth->RGB registration? -->
+  <arg name="depth_registration" default="false" />
+  <arg     if="$(arg depth_registration)" name="active_depth_ns" value="$(arg depth_registered)" />
+  <arg unless="$(arg depth_registration)" name="active_depth_ns" value="$(arg depth)" />
+
+  <!-- Throttle data -->
+  <arg name="data_skip" default="0" />
+
   <!-- Optionally suppress loading the driver nodelet and/or publishing the default tf
        tree. Useful if you are playing back recorded raw data from a bag, or are
        supplying a more accurate tf tree from calibration. -->
   <arg name="load_driver" default="true" />
   <arg name="load_processing" default="true" />
   <arg name="publish_tf" default="true" />
+  <arg name="scan_processing" default="false" />
 
   <!-- Disable bond topics by default -->
   <arg name="bond" default="false" /> <!-- DEPRECATED, use respawn arg instead -->
@@ -86,6 +91,17 @@
       <arg name="projector"             value="$(arg projector)" />
       <arg name="respawn"               value="$(arg respawn)" />
     </include>
+
+    <!-- Load conversion to fake laser scan -->
+    <group if="$(arg scan_processing)">
+      <node pkg="nodelet" type="nodelet" name="depthimage_to_laserscan_loader"
+	    args="load depthimage_to_laserscan/DepthImageToLaserScanNodelet /$(arg manager)">
+        <param name="output_frame_id" value="/$(arg camera)_depth_frame"/>
+        <param name="range_min" value="0.6"/>
+        <remap from="image" to="/$(arg camera)/$(arg active_depth_ns)/image_raw"/>
+        <remap from="scan" to="/scan" />
+      </node>
+    </group>
 
   </group> <!-- camera -->
 
