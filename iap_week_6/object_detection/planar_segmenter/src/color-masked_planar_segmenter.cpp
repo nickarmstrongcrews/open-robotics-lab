@@ -98,11 +98,6 @@ void processCloud()
   if(pendingMaskMsg==NULL) {
     ROS_WARN("no mask msg yet, processing all points");
     segmentCloud(pendingCloudMsg, cloud_inliers, cloud_remainder, coeffs);
-  } else if(pendingMaskMsg->) {
-    ROS_WARN("no good points in mask, skipping segmentation");
-    pub3.publish(pendingCloudMsg);
-    pendingCloudMsg = PointCloud::ConstPtr(); // reset to NULL
-    return;
   } else {
     ROS_INFO("processing cloud w/ mask");
     // mask cloud (remove points that mask says are invalid)
