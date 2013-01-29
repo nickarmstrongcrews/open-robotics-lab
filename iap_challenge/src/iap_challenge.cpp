@@ -106,12 +106,12 @@ private:
     bboxpub_ = private_nh.advertise<visualization_msgs::Marker>("bbox",1);
     sub_= nh.subscribe<PointCloud>("depth/points", 1, &IapChallenge::cloudcb, this);
 
-    srv_ = new dynamic_reconfigure::Server<iap_challenge::IapChallenge>(private_nh);
-    dynamic_reconfigure::Server<iap_challenge::IapChallenge>::CallbackType f = boost::bind(&IapChallenge::reconfigure, this, _1, _2);
+    srv_ = new dynamic_reconfigure::Server<iap_challenge::IapChallengeConfig>(private_nh);
+    dynamic_reconfigure::Server<iap_challenge::IapChallengeConfig>::CallbackType f = boost::bind(&IapChallenge::reconfigure, this, _1, _2);
     srv_->setCallback(f);
   }
 
-  void reconfigure(iap_challenge::IapChallenge &config, uint32_t level)
+  void reconfigure(iap_challenge::IapChallengeConfig &config, uint32_t level)
   {
     min_y_ = config.min_y;
     max_y_ = config.max_y;
