@@ -7,4 +7,5 @@
 - other: {local-name: iap_week_1}
 - other: {local-name: iap_week_2}
 - other: {local-name: iap_week_5}
+- other: {local-name: iap_week_6}
 - setup-file: {local-name: /opt/ros/groovy/setup.sh}
