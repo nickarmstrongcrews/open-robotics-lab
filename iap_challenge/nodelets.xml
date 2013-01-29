@@ -1,0 +1,7 @@
+<library path="lib/libiap_challenge">
+  <class name="iap_challenge/IapChallenge" type="iap_challenge::IapChallenge" base_class_type="nodelet::Nodelet">
+    <description>
+      The iap challenge node.
+    </description>
+  </class>
+</library> 
