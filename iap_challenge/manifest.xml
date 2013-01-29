@@ -1,0 +1,15 @@
+<package>
+  <description brief="iap_challenge">
+
+     iap_challenge
+
+  </description>
+  <author>turtlebot</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/iap_challenge</url>
+  <depend package="roscpp"/>
+
+</package>
+
+
