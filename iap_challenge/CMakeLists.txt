@@ -34,7 +34,7 @@ include_directories(${PCL_INCLUDE_DIRS})
 
 rosbuild_add_boost_directories()
 
-rosbuild_add_library(iap_challenge src/iap_challenge.cpp)
+rosbuild_add_library(iap_challenge src/iap_ball_finder.cpp)
 
 #add dynamic reconfigure api                                                                                    
 rosbuild_find_ros_package(dynamic_reconfigure)
