@@ -1,0 +1,21 @@
+<package>
+  <description brief="iap_challenge">
+
+     iap_challenge
+
+  </description>
+  <author>Michael Boulet</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/iap_challenge</url>
+  <depend package="nodelet"/>
+  <depend package="roscpp"/>
+  <depend package="pcl_ros"/>
+  <depend package="visualization_msgs"/>
+  <depend package="turtlebot_bringup"/>
+  <export>
+    <nodelet plugin="${prefix}/nodelets.xml" />
+  </export>
+</package>
+
+

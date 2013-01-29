@@ -1,0 +1,20 @@
+<!--
+  Assumes iap_bringup turtlebot.launch was launched previously
+ -->
+<launch>
+  <include file="$(find iap_bringup)/launch/includes/_openni.launch">
+    <arg name="depth_registration" value="true" />
+    <arg name="data_skip" value="9" />
+  </include>
+
+  <node pkg="nodelet" type="nodelet" name="iap_challenge_perception_manager" args="manager" />
+  <node pkg="nodelet" type="nodelet" name="iap_challenge_perception" args="load iap_challenge/IapChallengePerception iap_challenge_perception_manager">
+    <remap from="depth_registered/points" to="camera/depth_registered/points" />
+    <remap from="iap_challenge_perception/marker" to="iap_challenge/marker" />
+    <param name="min_x" value="-0.35" />
+    <param name="max_x" value="0.35" />
+    <param name="min_y" value="0.1" />
+    <param name="max_y" value="0.5" />
+    <param name="max_z" value="1.2" />
+  </node>
+</launch>

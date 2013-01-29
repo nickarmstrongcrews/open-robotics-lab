@@ -8,4 +8,6 @@
 - other: {local-name: iap_week_2}
 - other: {local-name: iap_week_5}
 - other: {local-name: iap_week_6}
+- other: {local-name: iap_challenge}
+- other: {local-name: python_msg_conversions}
 - setup-file: {local-name: /opt/ros/groovy/setup.sh}
