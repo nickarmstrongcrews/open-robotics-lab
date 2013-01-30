@@ -34,6 +34,7 @@
 #include <pcl_ros/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl/point_types_conversion.h>
+#include <pcl/segmentation/extract_clusters.h>
 #include "dynamic_reconfigure/server.h"
 #include "iap_challenge/IapBallFinderConfig.h"
 
@@ -59,8 +60,9 @@ public:
    */
   IapBallFinder() : min_y_(0.1), max_y_(0.5),
 		    min_x_(-0.2), max_x_(0.2),
-		    max_z_(0.8), hue_(0.8),
-		    hue_distance_(0.2)
+		    max_z_(0.8), hue_(240),
+		    hue_distance_(10), cluster_tolerance_(0.02),
+		    cluster_min_size_(20), cluster_max_size_(10000)
   {
 
   }
@@ -78,6 +80,9 @@ private:
   double max_z_; /**< The maximum z position of the points in the box. */
   double hue_; /**< Ball hue. */
   double hue_distance_; /**< Accepted distance from ball hue. */
+  double cluster_tolerance_;
+  int cluster_min_size_;
+  int cluster_max_size_;
 
   // Dynamic reconfigure server
   dynamic_reconfigure::Server<iap_challenge::IapBallFinderConfig>* srv_;
@@ -99,6 +104,9 @@ private:
     private_nh.getParam("max_z", max_z_);
     private_nh.getParam("hue", hue_);
     private_nh.getParam("hue_distance", hue_distance_);
+    private_nh.getParam("cluster_tolerance", cluster_tolerance_);
+    private_nh.getParam("cluster_min_size", cluster_min_size_);
+    private_nh.getParam("cluster_max_size", cluster_max_size_);
 
     markerpub_ = private_nh.advertise<visualization_msgs::Marker>("marker",1);
     bboxpub_ = private_nh.advertise<visualization_msgs::Marker>("bbox",1);
@@ -120,6 +128,9 @@ private:
     max_z_ = config.max_z;
     hue_ = config.hue;
     hue_distance_ = config.hue_distance;
+    cluster_tolerance_ = config.cluster_tolerance;
+    cluster_min_size_ = config.cluster_min_size;
+    cluster_max_size_ = config.cluster_max_size;
   }
 
   /*!
@@ -132,8 +143,7 @@ private:
   void cloudcb(const PointCloud::ConstPtr&  cloud)
   {
     //Point cloud of accepted points
-    PointCloud incloud;
-    incloud.header = cloud->header;
+    PointCloud::Ptr cloud_filtered(new PointCloud);
 
     //Iterate through all the points in the region and find the average of the position
     BOOST_FOREACH (const pcl::PointXYZRGB& pt, cloud->points)
@@ -153,13 +163,35 @@ private:
 	  //Threshold on HSV
 	  if (fabs(hue_ - pt_hsv.h) < hue_distance_/2 ||
 	      fabs(hue_ - 360 + pt_hsv.h) < hue_distance_/2) {
-	    incloud.push_back(pt);
+	    cloud_filtered->push_back(pt);
 	  }
+	  cloud_filtered->header = cloud->header;
+	  cloud_filtered->width = cloud_filtered->points.size();
+	  cloud_filtered->height = 1;
+	  cloud_filtered->is_dense = true;
+
+	  ROS_INFO("Hi!");
+
+	  // Creating the KdTree object for the search method of the extraction
+	  pcl::search::KdTree<pcl::PointXYZRGB>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZRGB>);
+	  tree->setInputCloud(cloud);
+
+	  // Cluster the points
+	  std::vector<pcl::PointIndices> cluster_indices;
+	  pcl::EuclideanClusterExtraction<pcl::PointXYZRGB> ec;
+	  ec.setClusterTolerance(cluster_tolerance_);
+	  ec.setMinClusterSize(cluster_min_size_);
+	  ec.setMaxClusterSize(cluster_max_size_);
+	  ec.setSearchMethod(tree);
+	  ec.setInputCloud(cloud);
+	  ec.extract(cluster_indices);
+
+	  ROS_INFO("Mike");
         }
       }
     }
 
-    cloudpub_.publish(incloud);
+    cloudpub_.publish(cloud_filtered);
     publishBbox();
   }
 

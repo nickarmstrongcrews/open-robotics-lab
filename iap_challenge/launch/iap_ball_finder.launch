@@ -8,7 +8,7 @@
   </include>
 
   <!--  This gets loaded into the 3d sensors nodelet manager -->
-  <node pkg="nodelet" type="nodelet" name="iap_ball_finder_manager" args="manager"/>
+  <node pkg="nodelet" type="nodelet" name="iap_ball_finder_manager" args="manager" launch-prefix="xterm -e gdb --args"/>
   <node pkg="nodelet" type="nodelet" name="iap_ball_finder" args="load iap_challenge/IapBallFinder iap_ball_finder_manager">
     <remap from="depth_registered/points" to="camera/depth_registered/points" />
     <param name="min_x" value="-3" />
@@ -18,6 +18,9 @@
     <param name="max_z" value="3" />
     <param name="hue" value="55" />
     <param name="hue_distance" value="8" />
+    <param name="cluster_tolerance" value="0.1" />
+    <param name="cluster_min_size" value="150" />
+    <param name="cluster_max_size" value="1000" />
   </node>
   <!--
   <group ns="camera">
