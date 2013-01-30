@@ -36,7 +36,7 @@
 #include <pcl/point_types_conversion.h>
 #include <pcl/segmentation/extract_clusters.h>
 #include "dynamic_reconfigure/server.h"
-#include "iap_challenge/IapBallFinderConfig.h"
+#include "iap_challenge/IapChallengePerceptionConfig.h"
 
 #include <visualization_msgs/Marker.h>
 
@@ -45,20 +45,20 @@ namespace iap_challenge
 {
 typedef pcl::PointCloud<pcl::PointXYZRGB> PointCloud;
 
-//* The IAP Challenge Ball Finder nodelet.
+//* The IAP Challenge Perception nodelet.
 /**
- * The IAP Challenge Ball Finder nodelet. Subscribes to point clouds
+ * The IAP Challenge Perception nodelet. Subscribes to point clouds
  * from the 3dsensor, processes them, and publishes maker messages at
  * the ball's location.
  */
-class IapBallFinder : public nodelet::Nodelet
+class IapChallengePerception : public nodelet::Nodelet
 {
 public:
   /*!
-   * @brief The constructor for the IAP Challenge Ball Finder nodelet.
-   * Constructor for the IAP Challenge Ball Finder nodelet.
+   * @brief The constructor for the IAP Challenge Perception nodelet.
+   * Constructor for the IAP Challenge Perception nodelet.
    */
-  IapBallFinder() : min_y_(0.1), max_y_(0.5),
+  IapChallengePerception() : min_y_(0.1), max_y_(0.5),
 		    min_x_(-0.2), max_x_(0.2),
 		    max_z_(0.8), hue_(240),
 		    hue_distance_(10), cluster_tolerance_(0.02),
@@ -67,7 +67,7 @@ public:
 
   }
 
-  ~IapBallFinder()
+  ~IapChallengePerception()
   {
     delete srv_;
   }
@@ -85,7 +85,7 @@ private:
   int cluster_max_size_;
 
   // Dynamic reconfigure server
-  dynamic_reconfigure::Server<iap_challenge::IapBallFinderConfig>* srv_;
+  dynamic_reconfigure::Server<iap_challenge::IapChallengePerceptionConfig>* srv_;
 
   /*!
    * @brief OnInit method from node handle.
@@ -111,15 +111,15 @@ private:
     markerpub_ = private_nh.advertise<visualization_msgs::Marker>("marker",1);
     bboxpub_ = private_nh.advertise<visualization_msgs::Marker>("bbox",1);
     cloudpub_ = private_nh.advertise<PointCloud>("points",1);
-    sub_= nh.subscribe<PointCloud>("depth_registered/points", 1, &IapBallFinder::cloudcb, this);
+    sub_= nh.subscribe<PointCloud>("depth_registered/points", 1, &IapChallengePerception::cloudcb, this);
 
-    srv_ = new dynamic_reconfigure::Server<iap_challenge::IapBallFinderConfig>(private_nh);
-    dynamic_reconfigure::Server<iap_challenge::IapBallFinderConfig>::CallbackType f =
-      boost::bind(&IapBallFinder::reconfigure, this, _1, _2);
+    srv_ = new dynamic_reconfigure::Server<iap_challenge::IapChallengePerceptionConfig>(private_nh);
+    dynamic_reconfigure::Server<iap_challenge::IapChallengePerceptionConfig>::CallbackType f =
+      boost::bind(&IapChallengePerception::reconfigure, this, _1, _2);
     srv_->setCallback(f);
   }
 
-  void reconfigure(iap_challenge::IapBallFinderConfig &config, uint32_t level)
+  void reconfigure(iap_challenge::IapChallengePerceptionConfig &config, uint32_t level)
   {
     min_y_ = config.min_y;
     max_y_ = config.max_y;
@@ -263,6 +263,6 @@ private:
   ros::Publisher cloudpub_;
 };
 
-PLUGINLIB_DECLARE_CLASS(iap_challenge, IapBallFinder, iap_challenge::IapBallFinder, nodelet::Nodelet);
+PLUGINLIB_DECLARE_CLASS(iap_challenge, IapChallengePerception, iap_challenge::IapChallengePerception, nodelet::Nodelet);
 
 }

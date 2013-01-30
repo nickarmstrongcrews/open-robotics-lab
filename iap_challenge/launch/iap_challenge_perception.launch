@@ -8,8 +8,8 @@
   </include>
 
   <!--  This gets loaded into the 3d sensors nodelet manager -->
-  <node pkg="nodelet" type="nodelet" name="iap_ball_finder_manager" args="manager" launch-prefix="xterm -e gdb --args"/>
-  <node pkg="nodelet" type="nodelet" name="iap_ball_finder" args="load iap_challenge/IapBallFinder iap_ball_finder_manager">
+  <node pkg="nodelet" type="nodelet" name="iap_challenge_perception_manager" args="manager" launch-prefix="xterm -e gdb --args"/>
+  <node pkg="nodelet" type="nodelet" name="iap_challenge_perception" args="load iap_challenge/IapChallengePerception iap_challenge_perception_manager">
     <remap from="depth_registered/points" to="camera/depth_registered/points" />
     <param name="min_x" value="-3" />
     <param name="max_x" value="3" />
@@ -24,9 +24,9 @@
   </node>
   <!--
   <group ns="camera">
-    <node pkg="nodelet" type="nodelet" name="iap_ball_finder" 
-          args="load iap_challenge/IapBallFinder camera_nodelet_manager">
-      <remap from="iap_ball_finder/depth_registered/points" to="depth_registered/points" />
+    <node pkg="nodelet" type="nodelet" name="iap_challenge_perception" 
+          args="load iap_challenge/IapChallengePerception camera_nodelet_manager">
+      <remap from="iap_challenge_perception/depth_registered/points" to="depth_registered/points" />
       <param name="min_x" value="-3" />
       <param name="max_x" value="3" />
       <param name="min_y" value="-2" />
