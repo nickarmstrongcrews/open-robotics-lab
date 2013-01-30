@@ -56,8 +56,8 @@ public:
    * Constructor for the IAP Challenge Perception nodelet.
    */
   IapChallengePerception() : min_y_(0.1), max_y_(0.5),
-		    min_x_(-0.2), max_x_(0.2),
-		    max_z_(0.8)
+		    min_x_(-0.35), max_x_(0.35),
+		    max_z_(1.2)
   {
 
   }

@@ -1,0 +1,12 @@
+<!--
+  Assumes iap_bringup turtlebot.launch and iap_challenge iap_challenge_perception.launch were launched previously
+ -->
+<launch>
+  <node pkg="iap_challenge" type="iap_challenge_action.py" name="iap_challenge_action" output="screen">
+    <remap from="iap_challenge_action/marker" to="iap_challenge/marker" />
+    <remap from="iap_challenge_action/cmd_vel" to="/cmd_vel"/>
+    <param name="goal_z" value="0.6" />
+    <param name="x_scale" value="7.0" />
+    <param name="z_scale" value="2.0" />
+  </node>
+</launch>

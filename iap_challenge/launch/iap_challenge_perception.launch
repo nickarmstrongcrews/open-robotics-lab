@@ -1,5 +1,5 @@
 <!--
-  The iap challenge nodelet.   
+  Assumes iap_bringup turtlebot.launch was launched previously
  -->
 <launch>
   <include file="$(find iap_bringup)/launch/includes/_openni.launch">
@@ -10,6 +10,7 @@
   <node pkg="nodelet" type="nodelet" name="iap_challenge_perception_manager" args="manager" />
   <node pkg="nodelet" type="nodelet" name="iap_challenge_perception" args="load iap_challenge/IapChallengePerception iap_challenge_perception_manager">
     <remap from="depth_registered/points" to="camera/depth_registered/points" />
+    <remap from="iap_challenge_perception/marker" to="iap_challenge/marker" />
     <param name="min_x" value="-0.35" />
     <param name="max_x" value="0.35" />
     <param name="min_y" value="0.1" />
