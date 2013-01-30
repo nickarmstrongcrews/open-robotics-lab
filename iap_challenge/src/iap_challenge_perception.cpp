@@ -30,11 +30,8 @@
 #include "ros/ros.h"
 #include "pluginlib/class_list_macros.h"
 #include "nodelet/nodelet.h"
-#include <geometry_msgs/Twist.h>
 #include <pcl_ros/point_cloud.h>
 #include <pcl/point_types.h>
-#include <pcl/point_types_conversion.h>
-#include <pcl/segmentation/extract_clusters.h>
 #include "dynamic_reconfigure/server.h"
 #include "iap_challenge/IapChallengePerceptionConfig.h"
 
@@ -60,9 +57,7 @@ public:
    */
   IapChallengePerception() : min_y_(0.1), max_y_(0.5),
 		    min_x_(-0.2), max_x_(0.2),
-		    max_z_(0.8), hue_(240),
-		    hue_distance_(10), cluster_tolerance_(0.02),
-		    cluster_min_size_(20), cluster_max_size_(10000)
+		    max_z_(0.8)
   {
 
   }
@@ -78,11 +73,6 @@ private:
   double min_x_; /**< The minimum x position of the points in the box. */
   double max_x_; /**< The maximum x position of the points in the box. */
   double max_z_; /**< The maximum z position of the points in the box. */
-  double hue_; /**< Ball hue. */
-  double hue_distance_; /**< Accepted distance from ball hue. */
-  double cluster_tolerance_;
-  int cluster_min_size_;
-  int cluster_max_size_;
 
   // Dynamic reconfigure server
   dynamic_reconfigure::Server<iap_challenge::IapChallengePerceptionConfig>* srv_;
@@ -102,15 +92,9 @@ private:
     private_nh.getParam("min_x", min_x_);
     private_nh.getParam("max_x", max_x_);
     private_nh.getParam("max_z", max_z_);
-    private_nh.getParam("hue", hue_);
-    private_nh.getParam("hue_distance", hue_distance_);
-    private_nh.getParam("cluster_tolerance", cluster_tolerance_);
-    private_nh.getParam("cluster_min_size", cluster_min_size_);
-    private_nh.getParam("cluster_max_size", cluster_max_size_);
 
     markerpub_ = private_nh.advertise<visualization_msgs::Marker>("marker",1);
     bboxpub_ = private_nh.advertise<visualization_msgs::Marker>("bbox",1);
-    cloudpub_ = private_nh.advertise<PointCloud>("points",1);
     sub_= nh.subscribe<PointCloud>("depth_registered/points", 1, &IapChallengePerception::cloudcb, this);
 
     srv_ = new dynamic_reconfigure::Server<iap_challenge::IapChallengePerceptionConfig>(private_nh);
@@ -126,25 +110,21 @@ private:
     min_x_ = config.min_x;
     max_x_ = config.max_x;
     max_z_ = config.max_z;
-    hue_ = config.hue;
-    hue_distance_ = config.hue_distance;
-    cluster_tolerance_ = config.cluster_tolerance;
-    cluster_min_size_ = config.cluster_min_size;
-    cluster_max_size_ = config.cluster_max_size;
   }
 
   /*!
    * @brief Callback for point clouds.
-   * Callback for point clouds. Find points in a bounding box with
-   * color near hue_. Clusters points. Published centriod of clustered
-   * points as a marker message.
+   * Callback for point clouds.
    * @param cloud The point cloud message.
    */
   void cloudcb(const PointCloud::ConstPtr&  cloud)
   {
-    //Point cloud of accepted points
-    PointCloud::Ptr cloud_filtered(new PointCloud);
-
+    //X,Y,Z of the centroid
+    double x = 0.0;
+    double y = 0.0;
+    double z = 0.0;
+    //Number of points observed
+    unsigned int n = 0;
     //Iterate through all the points in the region and find the average of the position
     BOOST_FOREACH (const pcl::PointXYZRGB& pt, cloud->points)
     {
@@ -155,43 +135,35 @@ private:
         //Test to ensure the point is within the aceptable box.
         if (-pt.y > min_y_ && -pt.y < max_y_ && pt.x < max_x_ && pt.x > min_x_ && pt.z < max_z_)
         {
-	  //Convert to HSV space
-	  pcl::PointXYZRGB pt_copy(pt);
-	  pcl::PointXYZHSV pt_hsv;
-	  pcl::PointXYZRGBtoXYZHSV(pt_copy, pt_hsv);
-
-	  //Threshold on HSV
-	  if (fabs(hue_ - pt_hsv.h) < hue_distance_/2 ||
-	      fabs(hue_ - 360 + pt_hsv.h) < hue_distance_/2) {
-	    cloud_filtered->push_back(pt);
-	  }
-	  cloud_filtered->header = cloud->header;
-	  cloud_filtered->width = cloud_filtered->points.size();
-	  cloud_filtered->height = 1;
-	  cloud_filtered->is_dense = true;
-
-	  ROS_INFO("Hi!");
-
-	  // Creating the KdTree object for the search method of the extraction
-	  pcl::search::KdTree<pcl::PointXYZRGB>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZRGB>);
-	  tree->setInputCloud(cloud);
-
-	  // Cluster the points
-	  std::vector<pcl::PointIndices> cluster_indices;
-	  pcl::EuclideanClusterExtraction<pcl::PointXYZRGB> ec;
-	  ec.setClusterTolerance(cluster_tolerance_);
-	  ec.setMinClusterSize(cluster_min_size_);
-	  ec.setMaxClusterSize(cluster_max_size_);
-	  ec.setSearchMethod(tree);
-	  ec.setInputCloud(cloud);
-	  ec.extract(cluster_indices);
-
-	  ROS_INFO("Mike");
+          //Add the point to the totals
+          x += pt.x;
+          y += pt.y;
+          z += pt.z;
+          n++;
         }
       }
     }
 
-    cloudpub_.publish(cloud_filtered);
+    //If there are points, find the centroid and calculate the command goal.
+    //If there are no points, simply publish a stop goal.
+    if (n>4000)
+    {
+      x /= n;
+      y /= n;
+      z /= n;
+
+      ROS_DEBUG("Centriod at %f %f %f with %d points", x, y, z, n);
+
+      publishMarker(x,y,z);
+    }
+    else
+    {
+      ROS_DEBUG("Not enought points in centroid (%d)", n);
+
+      // signal no points points by setting the marker position to 0,0,0
+      publishMarker(0,0,0);
+    }
+
     publishBbox();
   }
 
@@ -260,7 +232,6 @@ private:
   ros::Subscriber sub_;
   ros::Publisher markerpub_;
   ros::Publisher bboxpub_;
-  ros::Publisher cloudpub_;
 };
 
 PLUGINLIB_DECLARE_CLASS(iap_challenge, IapChallengePerception, iap_challenge::IapChallengePerception, nodelet::Nodelet);
