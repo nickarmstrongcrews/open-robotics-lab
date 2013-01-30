@@ -33,6 +33,7 @@
 #include <geometry_msgs/Twist.h>
 #include <pcl_ros/point_cloud.h>
 #include <pcl/point_types.h>
+#include <pcl/point_types_conversion.h>
 #include "dynamic_reconfigure/server.h"
 #include "iap_challenge/IapBallFinderConfig.h"
 
@@ -41,24 +42,27 @@
 
 namespace iap_challenge
 {
-typedef pcl::PointCloud<pcl::PointXYZHSV> PointCloud;
+typedef pcl::PointCloud<pcl::PointXYZRGB> PointCloud;
 
-//* The iap challenge nodelet.
+//* The IAP Challenge Ball Finder nodelet.
 /**
- * The iap challenge nodelet. Subscribes to point clouds from the
- * 3dsensor, processes them, and publishes command vel messages.
+ * The IAP Challenge Ball Finder nodelet. Subscribes to point clouds
+ * from the 3dsensor, processes them, and publishes maker messages at
+ * the ball's location.
  */
 class IapBallFinder : public nodelet::Nodelet
 {
 public:
   /*!
-   * @brief The constructor for the iap challenge nodelet.
-   * Constructor for the iap challenge nodelet.
+   * @brief The constructor for the IAP Challenge Ball Finder nodelet.
+   * Constructor for the IAP Challenge Ball Finder nodelet.
    */
   IapBallFinder() : min_y_(0.1), max_y_(0.5),
 		    min_x_(-0.2), max_x_(0.2),
-		    max_z_(0.8)
+		    max_z_(0.8), hue_(0.8),
+		    hue_distance_(0.2)
   {
+
   }
 
   ~IapBallFinder()
@@ -72,6 +76,8 @@ private:
   double min_x_; /**< The minimum x position of the points in the box. */
   double max_x_; /**< The maximum x position of the points in the box. */
   double max_z_; /**< The maximum z position of the points in the box. */
+  double hue_; /**< Ball hue. */
+  double hue_distance_; /**< Accepted distance from ball hue. */
 
   // Dynamic reconfigure server
   dynamic_reconfigure::Server<iap_challenge::IapBallFinderConfig>* srv_;
@@ -91,13 +97,17 @@ private:
     private_nh.getParam("min_x", min_x_);
     private_nh.getParam("max_x", max_x_);
     private_nh.getParam("max_z", max_z_);
+    private_nh.getParam("hue", hue_);
+    private_nh.getParam("hue_distance", hue_distance_);
 
     markerpub_ = private_nh.advertise<visualization_msgs::Marker>("marker",1);
     bboxpub_ = private_nh.advertise<visualization_msgs::Marker>("bbox",1);
-    sub_= nh.subscribe<PointCloud>("depth/points", 1, &IapBallFinder::cloudcb, this);
+    cloudpub_ = private_nh.advertise<PointCloud>("points",1);
+    sub_= nh.subscribe<PointCloud>("depth_registered/points", 1, &IapBallFinder::cloudcb, this);
 
     srv_ = new dynamic_reconfigure::Server<iap_challenge::IapBallFinderConfig>(private_nh);
-    dynamic_reconfigure::Server<iap_challenge::IapBallFinderConfig>::CallbackType f = boost::bind(&IapBallFinder::reconfigure, this, _1, _2);
+    dynamic_reconfigure::Server<iap_challenge::IapBallFinderConfig>::CallbackType f =
+      boost::bind(&IapBallFinder::reconfigure, this, _1, _2);
     srv_->setCallback(f);
   }
 
@@ -108,19 +118,25 @@ private:
     min_x_ = config.min_x;
     max_x_ = config.max_x;
     max_z_ = config.max_z;
+    hue_ = config.hue;
+    hue_distance_ = config.hue_distance;
   }
 
   /*!
    * @brief Callback for point clouds.
-   * Callback for point clouds. Uses PCL to find the centroid
-   * of the points in a box in the center of the point cloud.
+   * Callback for point clouds. Find points in a bounding box with
+   * color near hue_. Clusters points. Published centriod of clustered
+   * points as a marker message.
    * @param cloud The point cloud message.
    */
   void cloudcb(const PointCloud::ConstPtr&  cloud)
   {
-    PointCloud in_points;
+    //Point cloud of accepted points
+    PointCloud incloud;
+    incloud.header = cloud->header;
+
     //Iterate through all the points in the region and find the average of the position
-    BOOST_FOREACH (const pcl::PointXYZHSV& pt, cloud->points)
+    BOOST_FOREACH (const pcl::PointXYZRGB& pt, cloud->points)
     {
       //First, ensure that the point's position is valid. This must be done in a seperate
       //if because we do not want to perform comparison on a nan value.
@@ -129,29 +145,21 @@ private:
         //Test to ensure the point is within the aceptable box.
         if (-pt.y > min_y_ && -pt.y < max_y_ && pt.x < max_x_ && pt.x > min_x_ && pt.z < max_z_)
         {
-	  ROS_INFO("HSV: %f %f %f", pt.h, pt.s, pt.v);
+	  //Convert to HSV space
+	  pcl::PointXYZRGB pt_copy(pt);
+	  pcl::PointXYZHSV pt_hsv;
+	  pcl::PointXYZRGBtoXYZHSV(pt_copy, pt_hsv);
+
+	  //Threshold on HSV
+	  if (fabs(hue_ - pt_hsv.h) < hue_distance_/2 ||
+	      fabs(hue_ - 360 + pt_hsv.h) < hue_distance_/2) {
+	    incloud.push_back(pt);
+	  }
         }
       }
     }
-#if 0
-    //If there are points, find the centroid and calculate the command goal.
-    //If there are no points, simply publish a stop goal.
-    if (n>4000)
-    {
-      x /= n;
-      y /= n;
-      z /= n;
 
-      ROS_DEBUG("Centriod at %f %f %f with %d points", x, y, z, n);
-
-      publishMarker(x,y,z);
-    }
-    else
-    {
-      ROS_DEBUG("No points detected, stopping the robot");
-      publishMarker(x,y,z);
-    }
-#endif
+    cloudpub_.publish(incloud);
     publishBbox();
   }
 
@@ -220,6 +228,7 @@ private:
   ros::Subscriber sub_;
   ros::Publisher markerpub_;
   ros::Publisher bboxpub_;
+  ros::Publisher cloudpub_;
 };
 
 PLUGINLIB_DECLARE_CLASS(iap_challenge, IapBallFinder, iap_challenge::IapBallFinder, nodelet::Nodelet);
